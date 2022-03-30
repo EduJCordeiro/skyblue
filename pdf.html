@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://momentjs.com/downloads/moment.min.js"></script>
+    <title>Cotacao-14-03-2022</title>
+</head>
+<style>
+    *{
+        margin: 0;
+        padding: 0;
+        /* visibility: hidden; */
+        font-family: 'Montserrat', sans-serif;
+        letter-spacing: 1.5px;
+    }
+    @media print {
+        *{
+            visibility: visible;
+        }
+    }
+    .text-color-blue{
+        color: #00A7E1;
+    }
+    .text-color-orange{
+        color: #F88D2A;
+    }
+    .text-color-gray{
+        color: #323E48;
+    }
+    .fs-14{
+        font-size: 14px;
+    }
+    .fs-20{
+        font-size: 20px;
+    }
+    .fs-24{
+        font-size: 24px;
+    }
+    .travel{
+        width: 510px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-evenly;
+        align-items: center;
+        margin-top: 30px;
+    }
+    .mid{
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+    }
+
+</style>
+<body onafterprint="window.close();">
+    <img src="images/CotacaoSFundo.jpg" style="width: 100%; height: 100%; position: absolute; top: 0; left:0;">
+    <div style="position: absolute; top: 0; left:0; text-align: center; width: 100%;height: 100%;padding-top: 70px;">
+        <h1 id="quotation" class="text-color-blue font-bold text-2xl"></h1>
+        <div id="travel" class="text-color-gray font-bold text-xl mt-10 mid">
+            <span id="origin"></span>
+            <span id="destination" class="mt-2"></span>
+        </div>
+        <div id="ida" class="text-color-blue mt-10 font-bold text-xl"></div>
+        <div class="travel">
+            <div>
+                <span id="go" class="fs-24 font-bold"></span>
+            </div> 
+            <div class="mid">
+                <span class="fs-14"> Duração </span> <span id="duration" class="text-color-orange fs-20">  </span> <span id="stop" class="fs-14"> </span>
+            </div> 
+            <div>
+                <span id="back" class="fs-24 font-bold"></span>
+            </div> 
+        </div>
+        <div id="volta" class="text-color-blue font-bold mt-10 text-xl">
+            
+        </div>
+        <div class="travel">
+            <div>
+                <span id="go-back" class="fs-24 font-bold"></span>
+            </div> 
+            <div class="mid">
+                <span class="fs-14"> Duração </span> <span id="duration-back" class="text-color-orange fs-20"> </span> <span id="stop-back" class="fs-14"> </span>
+            </div> 
+            <div>
+                <span id="back-back" class="fs-24 font-bold"></span>
+            </div> 
+        </div>
+        <div class="text-color-gray mt-10 text-sm font-normal">
+            Passagem com direito a 1 bagagem de mão de até 10kg <br>
+            Valor total de IDA e VOLTA para <span id="passengers" class="text-color-orange font-bold"> </span>
+        </div>
+        <div>
+            <span class="text-color-gray text-2xl mt-10 font-bold block"></span>
+            <span class="text-color-orange text-sm font-bold">(Todas as taxas aeroportuárias inclusas)</span>
+        </div>
+        <div class="text-color-gray font-normal text-sm mt-5">
+            Valores sujeitos à alteração de acordo com a disponibilidade da Cia aérea.
+        </div>
+    </div>
+</body>
+<script>
+    // window.print();
+
+    const dateQuotation = "22/03/2022";
+    const origin = 'Manaus';
+    const originAcronym = 'MAO';
+    const destination = 'Buenos Aires';
+    const destinationAcronym = 'BUE';
+    const ciaIda = 'LATAM';
+    const ciaVolta = 'LATAM';
+    const dataIda = "29/03/2022";
+    const dataVolta = "30/04/2022";
+    const timeToGo = '12:54';
+    const iataToGo = 'AEP';
+    const timeToBack = '18:24';
+    const iataToBack = 'EZE';
+    const stopGo = '1 parada';
+    const timeToGoBack = '17:55';
+    const iataToGoBack = 'EZE';
+    const timeToBackBack = '02:05';
+    const iataToBackBack = 'MAO';
+    const stopBack = 'Direto';
+    const passengers = '13';
+    const price = '25.017,00';
+    
+    var meses = [
+        "Janeiro",
+        "Fevereiro",
+        "Março",
+        "Abril",
+        "Maio",
+        "Junho",
+        "Julho",
+        "Agosto",
+        "Setembro",
+        "Outubro",
+        "Novembro",
+        "Dezembro"
+    ];
+
+    function formatarData(str) {
+        var partes = str.split('/').map(Number);
+        var data = new Date(partes[2], partes[1] - 1, partes[0]);
+        var mes = meses[data.getMonth()];
+        return [data.getDate(), mes.slice(0, 3).toUpperCase(), data.getFullYear()].join(' ');
+    }
+    
+    const dateQuotationPt = formatarData(dateQuotation).replace(' ','/').replace(' ','/');
+    const dataIdaPt = formatarData(dataIda).replace(' ','/').replace(' ','/');
+    const dataVoltaPt = formatarData(dataVolta).replace(' ','/').replace(' ','/');
+
+    var dtGo  = dataIda+" "+timeToGo;
+    var dtGo2 = dataIda+" "+timeToBack;
+
+    var ms = moment(dtGo2,"DD/MM/YYYY HH:mm:ss").diff(moment(dtGo,"DD/MM/YYYY HH:mm:ss"));
+    var d = moment.duration(ms);
+    var duration = Math.floor(d.asHours()) + "h" + moment.utc(ms).format(" mm") +"m";
+
+    var dtBack  = dataVolta+" "+timeToGoBack;
+    var dtBack2 = dataVolta+" "+timeToBackBack;
+
+    var ms = moment(dtBack2,"DD/MM/YYYY HH:mm:ss").diff(moment(dtBack,"DD/MM/YYYY HH:mm:ss"));
+    var d = moment.duration(ms);
+    var durationBack = Math.floor(d.asHours()) + "h" + moment.utc(ms).format(" mm") +"m";
+    
+    document.getElementById('quotation').innerHTML = "Cotação em "+dateQuotationPt;
+    document.getElementById('origin').innerHTML = "Origem: "+origin+"("+originAcronym+")";
+    document.getElementById('destination').innerHTML = "Destino: "+destination+"("+destinationAcronym+")";
+    document.getElementById('ida').innerHTML = "Ida: "+dataIdaPt+" - Companhia Aeréa "+ciaIda;
+    document.getElementById('volta').innerHTML = "Volta: "+dataVoltaPt+" - Companhia Aeréa "+ciaVolta;
+    document.getElementById('go').innerHTML = timeToGo+" "+iataToGo;
+    document.getElementById('back').innerHTML = timeToBack+" "+iataToBack;
+    document.getElementById('stop').innerHTML = stopGo;
+    document.getElementById('duration').innerHTML = duration;
+    document.getElementById('go-back').innerHTML = timeToGoBack+" "+iataToGoBack;
+    document.getElementById('back-back').innerHTML = timeToBackBack+" "+iataToBackBack;
+    document.getElementById('stop-back').innerHTML = stopBack;
+    document.getElementById('duration-back').innerHTML = durationBack;
+    document.getElementById('passengers').innerHTML = passengers+" Adultos";
+    document.getElementById('price').innerHTML = "Valor: "+price+" à vista";
+
+    function getAllUrlParams(url) {
+
+        // get query string from url (optional) or window
+        var queryString = url ? url.split('?')[1] : window.location.search.slice(1);
+
+        // we'll store the parameters here
+        var obj = {};
+
+        // if query string exists
+        if (queryString) {
+
+        // stuff after # is not part of query string, so get rid of it
+        queryString = queryString.split('#')[0];
+        // split our query string into its component parts
+        var arr = queryString.split('&');
+
+        for (var i = 0; i < arr.length; i++) {
+            // separate the keys and the values
+            var a = arr[i].split('=');
+
+            // set parameter name and value (use 'true' if empty)
+            var paramName = a[0];
+            var paramValue = typeof (a[1]) === 'undefined' ? true : a[1];
+
+            // (optional) keep case consistent
+            paramName = paramName.toLowerCase();
+            if (typeof paramValue === 'string') paramValue = paramValue.toLowerCase();
+
+            // if the paramName ends with square brackets, e.g. colors[] or colors[2]
+            if (paramName.match(/[(\d+)?]$/)) {
+
+            // create key if it doesn't exist
+            var key = paramName.replace(/[(\d+)?]/, '');
+            if (!obj[key]) obj[key] = [];
+
+            // if it's an indexed array e.g. colors[2]
+            if (paramName.match(/[\d+]$/)) {
+                // get the index value and add the entry at the appropriate position
+                var index = /[(\d+)]/.exec(paramName)[1];
+                obj[key][index] = paramValue;
+            } else {
+                // otherwise add the value to the end of the array
+                obj[key].push(paramValue);
+            }
+            } else {
+            // we're dealing with a string
+            if (!obj[paramName]) {
+                // if it doesn't exist, create property
+                obj[paramName] = paramValue;
+            } else if (obj[paramName] && typeof obj[paramName] === 'string'){
+                // if property does exist and it's a string, convert it to an array
+                obj[paramName] = [obj[paramName]];
+                obj[paramName].push(paramValue);
+            } else {
+                // otherwise add the property
+                obj[paramName].push(paramValue);
+            }
+            }
+        }
+        }
+
+        return obj;
+}
+
+console.log(getAllUrlParams(atob(window.location.href.split('?get=')[1])).teste1);
+console.log(getAllUrlParams(atob(window.location.href.split('?get=')[1])).teste2);
+</script>
+</html>
