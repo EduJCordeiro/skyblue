@@ -14,7 +14,7 @@
     *{
         margin: 0;
         padding: 0;
-        /* visibility: hidden; */
+        visibility: hidden;
         font-family: 'Montserrat', sans-serif;
         letter-spacing: 1.5px;
     }
@@ -95,7 +95,7 @@
             Valor total de IDA e VOLTA para <span id="passengers" class="text-color-orange font-bold"> </span>
         </div>
         <div>
-            <span class="text-color-gray text-2xl mt-10 font-bold block"></span>
+            <span id="price" class="text-color-gray text-2xl mt-10 font-bold block"></span>
             <span class="text-color-orange text-sm font-bold">(Todas as taxas aeroportuárias inclusas)</span>
         </div>
         <div class="text-color-gray font-normal text-sm mt-5">
@@ -104,29 +104,40 @@
     </div>
 </body>
 <script>
-    // window.print();
+    function formatDate(data, formato) {
+        if (formato == 'pt-br') {
+            return (data.substr(0, 10).split('-').reverse().join('/'));
+        } else {
+            return (data.substr(0, 10).split('/').reverse().join('-'));
+        }
+    }
 
-    const dateQuotation = "22/03/2022";
-    const origin = 'Manaus';
-    const originAcronym = 'MAO';
-    const destination = 'Buenos Aires';
-    const destinationAcronym = 'BUE';
-    const ciaIda = 'LATAM';
-    const ciaVolta = 'LATAM';
-    const dataIda = "29/03/2022";
-    const dataVolta = "30/04/2022";
-    const timeToGo = '12:54';
-    const iataToGo = 'AEP';
-    const timeToBack = '18:24';
-    const iataToBack = 'EZE';
-    const stopGo = '1 parada';
-    const timeToGoBack = '17:55';
-    const iataToGoBack = 'EZE';
-    const timeToBackBack = '02:05';
-    const iataToBackBack = 'MAO';
-    const stopBack = 'Direto';
-    const passengers = '13';
-    const price = '25.017,00';
+    const json = atob(window.location.href.split('?get=')[1]);
+
+    const obj = JSON.parse(json);
+    const dateQuotation = formatDate(obj.date_quotation, 'pt-br');
+    const origin = obj.origin;
+    const originAcronym = obj.acronym_origin;
+    const destination = obj.destination;
+    const destinationAcronym = obj.acronym_destination;
+    const ciaIda = obj.company;
+    const ciaVolta = obj.company_back;
+    const dataIdaSaida = formatDate(obj.date_go_origin, 'pt-br');
+    const dataIdaChegada = formatDate(obj.date_go_estimated, 'pt-br');
+    const dataVoltaSaida = formatDate(obj.date_back_origin, 'pt-br');
+    const dataVoltaChegada = formatDate(obj.date_back_estimated, 'pt-br');
+    const horaIdaSaida = obj.time_go_origin;
+    const iataToGo = obj.iata_origin;
+    const horaIdaChegada = obj.time_go_estimated;
+    const iataToBack = obj.iata_destination;
+    const stopGo = obj.number_stops;
+    const horaVoltaSaida = obj.time_back_origin;
+    const iataToGoBack = obj.iata_origin_back;
+    const horaVoltaChegada = obj.time_back_estimated;
+    const iataToBackBack = obj.iata_destination_back;
+    const stopBack = obj.number_stops_back;
+    const passengers = obj.passengers;
+    const price = obj.price;
     
     var meses = [
         "Janeiro",
@@ -143,6 +154,14 @@
         "Dezembro"
     ];
 
+    function dataFormatada(str){
+        let data = new Date(str),
+            dia  = data.getDate().toString().padStart(2, '0'),
+            mes  = (data.getMonth()+1).toString().padStart(2, '0'),
+            ano  = data.getFullYear();
+        return `${dia}/${mes}/${ano}`;
+    }
+
     function formatarData(str) {
         var partes = str.split('/').map(Number);
         var data = new Date(partes[2], partes[1] - 1, partes[0]);
@@ -151,21 +170,25 @@
     }
     
     const dateQuotationPt = formatarData(dateQuotation).replace(' ','/').replace(' ','/');
-    const dataIdaPt = formatarData(dataIda).replace(' ','/').replace(' ','/');
-    const dataVoltaPt = formatarData(dataVolta).replace(' ','/').replace(' ','/');
+    const dataIdaPt = formatarData(dataIdaSaida).replace(' ','/').replace(' ','/');
+    const dataVoltaPt = formatarData(dataVoltaChegada).replace(' ','/').replace(' ','/');
 
-    var dtGo  = dataIda+" "+timeToGo;
-    var dtGo2 = dataIda+" "+timeToBack;
+    var dtGo  = dataIdaSaida+" "+horaIdaSaida;
+    var dtGo2 = dataIdaChegada+" "+horaIdaChegada;
 
     var ms = moment(dtGo2,"DD/MM/YYYY HH:mm:ss").diff(moment(dtGo,"DD/MM/YYYY HH:mm:ss"));
     var d = moment.duration(ms);
     var duration = Math.floor(d.asHours()) + "h" + moment.utc(ms).format(" mm") +"m";
 
-    var dtBack  = dataVolta+" "+timeToGoBack;
-    var dtBack2 = dataVolta+" "+timeToBackBack;
+    var dtBack  = dataVoltaSaida+" "+horaVoltaSaida;
+    var dtBack2 = dataVoltaChegada+" "+horaVoltaChegada;
 
     var ms = moment(dtBack2,"DD/MM/YYYY HH:mm:ss").diff(moment(dtBack,"DD/MM/YYYY HH:mm:ss"));
     var d = moment.duration(ms);
+    if(d.asHours() < 0){
+        var ms = moment(dtBack2,"DD/MM/YYYY HH:mm:ss").add(1, 'd').diff(moment(dtBack,"DD/MM/YYYY HH:mm:ss"));
+        var d = moment.duration(ms);
+    }
     var durationBack = Math.floor(d.asHours()) + "h" + moment.utc(ms).format(" mm") +"m";
     
     document.getElementById('quotation').innerHTML = "Cotação em "+dateQuotationPt;
@@ -173,82 +196,17 @@
     document.getElementById('destination').innerHTML = "Destino: "+destination+"("+destinationAcronym+")";
     document.getElementById('ida').innerHTML = "Ida: "+dataIdaPt+" - Companhia Aeréa "+ciaIda;
     document.getElementById('volta').innerHTML = "Volta: "+dataVoltaPt+" - Companhia Aeréa "+ciaVolta;
-    document.getElementById('go').innerHTML = timeToGo+" "+iataToGo;
-    document.getElementById('back').innerHTML = timeToBack+" "+iataToBack;
+    document.getElementById('go').innerHTML = horaIdaSaida+" "+iataToGo;
+    document.getElementById('back').innerHTML = horaIdaChegada+" "+iataToBack;
     document.getElementById('stop').innerHTML = stopGo;
     document.getElementById('duration').innerHTML = duration;
-    document.getElementById('go-back').innerHTML = timeToGoBack+" "+iataToGoBack;
-    document.getElementById('back-back').innerHTML = timeToBackBack+" "+iataToBackBack;
+    document.getElementById('go-back').innerHTML = horaVoltaSaida+" "+iataToGoBack;
+    document.getElementById('back-back').innerHTML = horaVoltaChegada+" "+iataToBackBack;
     document.getElementById('stop-back').innerHTML = stopBack;
     document.getElementById('duration-back').innerHTML = durationBack;
     document.getElementById('passengers').innerHTML = passengers+" Adultos";
     document.getElementById('price').innerHTML = "Valor: "+price+" à vista";
 
-    function getAllUrlParams(url) {
-
-        // get query string from url (optional) or window
-        var queryString = url ? url.split('?')[1] : window.location.search.slice(1);
-
-        // we'll store the parameters here
-        var obj = {};
-
-        // if query string exists
-        if (queryString) {
-
-        // stuff after # is not part of query string, so get rid of it
-        queryString = queryString.split('#')[0];
-        // split our query string into its component parts
-        var arr = queryString.split('&');
-
-        for (var i = 0; i < arr.length; i++) {
-            // separate the keys and the values
-            var a = arr[i].split('=');
-
-            // set parameter name and value (use 'true' if empty)
-            var paramName = a[0];
-            var paramValue = typeof (a[1]) === 'undefined' ? true : a[1];
-
-            // (optional) keep case consistent
-            paramName = paramName.toLowerCase();
-            if (typeof paramValue === 'string') paramValue = paramValue.toLowerCase();
-
-            // if the paramName ends with square brackets, e.g. colors[] or colors[2]
-            if (paramName.match(/[(\d+)?]$/)) {
-
-            // create key if it doesn't exist
-            var key = paramName.replace(/[(\d+)?]/, '');
-            if (!obj[key]) obj[key] = [];
-
-            // if it's an indexed array e.g. colors[2]
-            if (paramName.match(/[\d+]$/)) {
-                // get the index value and add the entry at the appropriate position
-                var index = /[(\d+)]/.exec(paramName)[1];
-                obj[key][index] = paramValue;
-            } else {
-                // otherwise add the value to the end of the array
-                obj[key].push(paramValue);
-            }
-            } else {
-            // we're dealing with a string
-            if (!obj[paramName]) {
-                // if it doesn't exist, create property
-                obj[paramName] = paramValue;
-            } else if (obj[paramName] && typeof obj[paramName] === 'string'){
-                // if property does exist and it's a string, convert it to an array
-                obj[paramName] = [obj[paramName]];
-                obj[paramName].push(paramValue);
-            } else {
-                // otherwise add the property
-                obj[paramName].push(paramValue);
-            }
-            }
-        }
-        }
-
-        return obj;
-}
-
-console.log(getAllUrlParams(atob(window.location.href.split('?get=')[1])).teste1);
-console.log(getAllUrlParams(atob(window.location.href.split('?get=')[1])).teste2);
+    window.print();
 </script>
 </html>
